@@ -1,0 +1,182 @@
+1. List 5 aggregate functions and explain, in your own words, what they are for.
+Include a real world example for each. If you can’t list these from memory,
+do these flashcards until you can!
+
+  SUM -> used for finding the sum of the values in a column
+  SELECT SUM(sessions) FROM users;
+
+  MIN -> used for finding the minimum value in a column
+  SELECT MIN(age) FROM users;
+
+  MAX -> used for finding the maximum value in a column
+  SELECT MAX(age) FROM users;
+
+  AVG -> used to find the average of a column
+  SELECT AVG(age) FROM users;
+
+  COUNT -> used to return the number of rows in a table
+  SELECT COUNT(user_id) FROM users;
+
+2. Create a database called iron-bank-foundation. Create a donations table, and
+import CSV data from this file. Select the following data from the table:
+
+  Find the total of all donations received in the past year.
+
+  ibfoundation=# SELECT SUM(amount) FROM donations;
+   sum
+  -----
+   993
+  (1 row)
+
+  Find the total donations over time per donor. (i.e. Tanysha has donated 3
+  times with the amounts $25, $30, and $50. Her total is $105. )
+
+  ibfoundation=# SELECT SUM(amount) AS total_donated, donor FROM donations GROUP BY donor;
+   total_donated |   donor
+  ---------------+------------
+             173 | Daenerys
+              33 | Sansa
+              90 | Missandei
+             120 | Margaery
+              20 | Bronn
+              20 | Theon
+              60 | Arya
+              25 | Jon
+               7 | Gilly
+              30 | Ygritte
+              50 | Tormund
+              25 | Bran
+              45 | Melisandre
+              70 | Petyr
+             120 | Tyrion
+              75 | Brienne
+              10 | Daario
+              20 | Samwell
+  (18 rows)
+
+  What is the average donation per donor?
+
+  ibfoundation=# SELECT AVG(amount) AS average_donation, donor FROM donations GROUP BY donor;
+     average_donation   |   donor
+  ----------------------+------------
+    86.5000000000000000 | Daenerys
+    33.0000000000000000 | Sansa
+    22.5000000000000000 | Missandei
+   120.0000000000000000 | Margaery
+    20.0000000000000000 | Bronn
+    10.0000000000000000 | Theon
+    20.0000000000000000 | Arya
+    25.0000000000000000 | Jon
+     7.0000000000000000 | Gilly
+    30.0000000000000000 | Ygritte
+    50.0000000000000000 | Tormund
+    25.0000000000000000 | Bran
+    45.0000000000000000 | Melisandre
+    70.0000000000000000 | Petyr
+    40.0000000000000000 | Tyrion
+    75.0000000000000000 | Brienne
+    10.0000000000000000 | Daario
+    20.0000000000000000 | Samwell
+  (18 rows)
+
+  How many donations over $100 have been received?
+
+  ibfoundation=# SELECT COUNT(amount) FROM donations WHERE amount > 100;
+   count
+  -------
+       2
+  (1 row)
+
+  What is the largest donation received in a single instance from a single donor?
+
+  ibfoundation=# SELECT MAX(amount) FROM donations;
+   max
+  -----
+   120
+  (1 row)
+
+  What is the smallest donation we’ve received?
+
+  ibfoundation=# SELECT MIN(amount) FROM donations;
+   min
+  -----
+     5
+  (1 row)
+
+3. How would you determine the display order of data returned by your SELECT statement?
+
+I would use the ORDER BY clause, followed by the column which I want to order
+the results by. by default ORDER BY will sort results in ascending order, if I
+wanted to sort them in descending order I would add DESC to the query. The
+resulting query would look like:
+SELECT <column1, column2 ...> FROM <table> ORDER BY <column> DESC;
+
+4. What is a real world situation where you would use OFFSET?
+
+A real world example might be in a website where you want to show a limited number
+of results per page. Let's say you wanted to show 5 results per page, the database
+query for the first page would include a `LIMIT 5` in the query. To show the
+next 5 results on the second page, the database query would include
+`LIMIT 5 OFFSET 5`.
+
+5. Why is it important to use ORDER BY when limiting your results?
+
+It is import to use order by to ensure you are getting the results you want. By
+default the results will be in order of their primary key, so limiting the
+results to 5 without specifying the ORDER BY, you will get the first 5 entries
+in the database.
+
+6. What is the difference between HAVING and WHERE?
+
+WHERE filters out individual rows, where as HAVING is used with a GROUP BY clause
+to filter out entire groups based on a condition.
+
+7. Correct the following SELECT statement:
+
+ SELECT id, SUM (amount)
+ FROM payment
+ HAVING SUM (amount) > 200;
+
+ SELECT SUM(amount) AS sum_amount, id
+ FROM PAYMENT
+ HAVING sum_amount > 200;
+
+8. Write queries to retrieve the following information.
+
+  From the cats table, list all cats organized by intake date.
+
+  SELECT *
+  FROM cats
+  ORDER BY intake_date;
+
+  Given an adoptions table with the columns id, date, adopter, cat, and fee,
+  determine the 5 most recent adoptions to be featured as “Happy Tails” on social media.
+
+  SELECT date, adopter, fee
+  FROM adoptions
+  ORDER BY date DESC
+  LIMIT 5;
+
+  There is a potential adopter looking for an adult female cat. In the most
+  efficient way possible, from the Cats table, list all female cats 2 or more years old.
+
+  SELECT * FROM cats WHERE age >= 2 AND gender = "F";
+
+  From the donations table (described in problem #2), find the top 5 donors with
+  the highest cumulative donation amounts to be honored as “Platinum Donors”.
+
+  SELECT SUM(amount) AS total_amount, donor
+  FROM donations
+  GROUP BY donor
+  ORDER BY total_amount DESC
+  LIMIT 5;
+
+  From the donations table (described in problem #2), find donors 6-15 with the
+  next highest cumulative donation amounts to be honored as “Gold Donors”.
+
+  SELECT SUM(amount) AS total_amount, donor
+  FROM donations
+  GROUP BY donor
+  ORDER BY total_amount DESC
+  LIMIT 10
+  OFFSET 5;
