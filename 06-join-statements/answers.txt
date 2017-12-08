@@ -1,0 +1,307 @@
+1. How do you find data that is held in two separate data tables?
+
+  I would use a JOIN statement to combine the data in multiple tables and return
+  a table with the joined data.
+
+2. Explain, in your own words, the difference between a CROSS JOIN, INNER JOIN,
+LEFT OUTER JOIN, RIGHT OUTER JOIN, and FULL OUTER JOIN. Give a real world
+example for each.
+
+  CROSS JOIN -> a cross join returns every combination of rows from table 1 and
+  table 2. An example use for cross join is if you wanted to assemble users into
+  teams and show every possible combination of teams.
+
+  INNER JOIN -> is the default join type in a query. The inner join matches a row
+  in table 2 for each row in table 1 where a condition is met. An example use of
+  inner join would be if there was a users table and colours table, each user has
+  a favourite colour and you wanted you show each user along with their respective
+  favourite colour.
+
+
+  LEFT OUTER JOIN -> starts with an inner join, joining table 2 rows with table 1
+  rows where a condition is met. If there is no condition met for a row in table
+  1, the row from table 1 will be added with a null value in the table 2 column.
+  When doing a left outer join there will be at least 1 row for each column in
+  table 1. An example use case is when you have a table of users and groups, and
+  you want a query of each user and the group they belong to, but not every user
+  has a group. A left outer join would show each user and the group the belong to
+  or the user and null if they don't belong to a group.
+
+  RIGHT OUTER JOIN -> the opposite of left outer join. First an inner join is
+  is done, but for each row in table 2 that does not meet the true condition a
+  row is added with a null value in the table 1 column. Using the same example
+  as in the left outer join example, if you wanted to query to include every
+  group weather or not they had a user then you would do a right outer join.
+  The right outer join query would list every group from table 2 along with their
+  users, and if the group didn't have any users, it would list the group with
+  null in the table 1 column.
+
+  FULL OUTER JOIN -> a combination of left outer join and right outer join.
+  Continuing the user and groups example, if you wanted to place users without
+  groups inside of empty groups you would add a full outer join to your query.
+  This would show all the users, and their respective groups, as well as all
+  groups without users and users without groups.
+
+3. Define primary key and foreign key. Give a real world example for each.
+
+  Primary key is a unique identifier in a table, usually of data type integer. The
+  purpose of a primary key is to uniquely identify each row in a table. Primary
+  keys are used in other tables to associate data in different tables. When one
+  table's primary key is included as a column in another table, this is a foreign
+  key. An example use of a primary key would be in a users table, each user would
+  have a unique id number as a primary key. A comments table where each comment is
+  associated with a user would have the users primary key as a foreign key in the
+  comments table.
+
+4. Define aliasing.
+
+  Aliasing is the use of short variable names in place of entire table names.
+
+5. Change this query so that you are using aliasing:
+  SELECT professor.name, compensation.salary, compensation.vacation_days
+  FROM professor
+  JOIN compensation
+  ON professor.id = compensation.professor_id;
+
+  SELECT p.name, c.salary, c.vacation_days
+  FROM professor AS p
+  JOIN compensation AS c
+  ON p.id = c.professor_id;
+
+
+6. Why would you use a NATURAL JOIN? Give a real world example.
+
+  A natural join would be used as to find all common columns in a table and
+  display them in the query results. A real world example might be if you have
+  two tables that share several columns and you want to display the joined table
+  with each shared column without explicitly adding each column to the join.
+
+7. Build an Employees table and a Shifts table with appropriate primary and
+foreign keys. Then, write queries to find the following information:
+
+  List all employees and all shifts.
+  company=# SELECT * FROM employees;
+   id | name
+  ----+-------
+    1 | Bob
+    2 | Jim
+    3 | sally
+
+   company=# SELECT * FROM SHIFTS;
+    id |   time    | employee_id
+   ----+-----------+-------------
+     1 | morning   |           2
+     2 | afternoon |           1
+     3 | evening   |
+     4 | night     |
+
+  Create a list of all possible schedules.
+
+  company=# SELECT * FROM employees CROSS JOIN shifts;
+   id | name  | id |   time    | employee_id
+  ----+-------+----+-----------+-------------
+    1 | Bob   |  1 | morning   |           2
+    1 | Bob   |  2 | afternoon |           1
+    1 | Bob   |  3 | evening   |
+    1 | Bob   |  4 | night     |
+    2 | Jim   |  1 | morning   |           2
+    2 | Jim   |  2 | afternoon |           1
+    2 | Jim   |  3 | evening   |
+    2 | Jim   |  4 | night     |
+    3 | sally |  1 | morning   |           2
+    3 | sally |  2 | afternoon |           1
+    3 | sally |  3 | evening   |
+    3 | sally |  4 | night     |
+
+
+8. Given the Dogs table (described below), the Adoptions table (described below),
+the Adopters table (which has the columns id, first_name, last_name, address,
+and phone number), and the Volunteers table (which has the columns id, name,
+address, phone_number, available_to_foster, and foster_id), please write queries
+to retrieve the following information.
+
+  Create a list of all volunteers. If the volunteer is fostering a dog, include
+  each dog as well.
+
+  pet_adoption=# SELECT volunteers.name AS vol_name, dogs.name AS dog_name
+  pet_adoption-# FROM volunteers
+  pet_adoption-# JOIN dogs
+  pet_adoption-# ON volunteers.foster_id = dogs.id;
+   vol_name | dog_name
+  ----------+----------
+   sally    | spot
+   bobby    | muffin
+  (2 rows)
+
+
+  List the adopter’s name and the pet’s name for each animal adopted within the
+  past month to be displayed as a ‘Happy Tail’ on social media.
+
+  pet_adoption=# SELECT adoptors.first_name AS adopter,
+  pet_adoption-# dogs.name AS dog,
+  pet_adoption-# adoptions.date AS adoption_date
+  pet_adoption-# FROM adoptors
+  pet_adoption-# JOIN adoptions ON adoptions.adopter_id = adoptors.id
+  pet_adoption-# JOIN dogs ON adoptions.dog_id = dogs.id
+  pet_adoption-# WHERE adoptions.date < NOW() - INTERVAL '30 days';
+   adopter |  dog  | adoption_date
+  ---------+-------+---------------
+   bobby   | rufus | 2017-05-05
+  (1 row)
+
+  Create a list of adopters who have not yet chosen a dog to adopt and generate
+  all possible combinations of adopters and available dogs.
+
+  pet_adoption=# SELECT adoptors.first_name AS human_name, dogs.name AS dog_name
+  pet_adoption-# FROM adoptors
+  pet_adoption-# CROSS JOIN dogs
+  pet_adoption-# WHERE dogs.id NOT IN (SELECT dog_id FROM adoptions)
+  pet_adoption-# AND adoptors.id NOT IN (SELECT adopter_id FROM adoptions);
+   human_name | dog_name
+  ------------+----------
+   lisa       | spot
+   lisa       | muffin
+  (2 rows)
+
+  Display a list of all cats and all dogs who have not been adopted.
+
+  pet_adoption=# SELECT * FROM cats WHERE adoption_date IS null;
+   id |  name  | gender | age | intake_date | adoption_date
+  ----+--------+--------+-----+-------------+---------------
+    1 | max    | M      |   2 | 2017-09-09  |
+    2 | tiger  | M      |   3 | 2017-08-09  |
+    3 | fluffy | F      |   4 | 2017-10-09  |
+  (3 rows)
+
+  pet_adoption=# SELECT * FROM dogs
+  pet_adoption-# WHERE dogs.id NOT IN (SELECT dog_id FROM adoptions);
+   id |  name  | gender | age | weight | intake_date |   breed   | in_foster
+  ----+--------+--------+-----+--------+-------------+-----------+-----------
+    1 | spot   | M      |   3 |     50 | 2017-10-10  | dalmation | t
+    2 | muffin | F      |   2 |     20 | 2017-10-11  | poodle    | t
+  (2 rows)
+
+  Create a list of volunteers who are available to foster. If they currently are
+  fostering a dog, include the dog. Also include all dogs who are not currently
+  in foster homes.
+
+  pet_adoption=# SELECT
+  pet_adoption-# volunteers.name AS volunteer_name,
+  pet_adoption-# dogs.name AS dog_fostering
+  pet_adoption-# FROM volunteers
+  pet_adoption-# FULL OUTER JOIN dogs
+  pet_adoption-# ON volunteers.foster_id = dogs.id;
+  volunteer_name | dog_fostering
+  ---------------+---------------
+  sally          | spot
+  bobby          | muffin
+  homer          |
+                 | tess
+                 | rufus
+  (5 rows)
+
+9. Write a query to find the name of the person who adopted Seashell given the
+tables Cats (depicted below), Adoptions (depicted below), and Adopters which has
+columns for id, address, phone number, and name.
+  Dogs table has the columns id, name, gender, age, weight, intake_date, breed,
+  and in_foster.
+  Cats table has the columns id, name, gender, age, intake_date, adoption_date
+  Adoptions table has the columns id, adopter, cat, dog, fee, date
+
+  pet_adoption=# SELECT adoptors.first_name
+  pet_adoption-# FROM adoptors
+  pet_adoption-# JOIN adoptions ON adoptions.adopter_id = adoptors.id
+  pet_adoption-# JOIN cats ON adoptions.cat_id = cats.id
+  pet_adoption-# WHERE cats.name = 'seashell';
+   first_name
+  ------------
+   lisa
+  (1 row)
+
+
+10. Given the tables Books (isbn, title, author), Transactions(id,
+checked_out_date, checked_in_date, user_id, isbn), Holds(id, isbn, user_id, rank,
+date), and Patrons(id, name, fine_amount), write queries to find the following
+information:
+
+  To discern if the library should buy more copies of a given book, please
+  provide the names and position, in order, of all of the patrons waiting in
+  line for Harry Potter and the Sorcerer’s Stone.
+
+  bookstore=# SELECT patrons.name, holds.rank
+  bookstore-# FROM patrons
+  bookstore-# JOIN holds ON patrons.id = holds.user_id
+  bookstore-# JOIN books ON holds.isbn = books.isbn
+  bookstore-# WHERE books.title = 'harry potter'
+  bookstore-# ORDER BY holds.rank;
+       name      | rank
+  ---------------+------
+   homer simpson |    1
+   bart simpson  |    2
+  (2 rows)
+
+  Make a list of all book titles and denote whether or not a copy of that book
+  is checked out.
+
+  bookstore=# SELECT
+  bookstore-# books.title AS book,
+  bookstore-# bool_or(transactions.checked_in_date IS NULL) AS checked_out
+  bookstore-# FROM books
+  bookstore-# JOIN transactions
+  bookstore-# ON transactions.isbn = books.isbn
+  bookstore-# GROUP BY books.title;
+        book         | checked_out
+  -------------------+-------------
+  the cat in the hat | f
+  lord of the rings  | t
+  harry potter       | t
+  charlie brown      | t
+  (4 rows)
+
+  In an effort to learn which books take longer to read, the librarians would
+  like you to create a list of total checked out time by book name in the past month.
+
+  bookstore=# SELECT books.title,
+  bookstore-# SUM(checked_in_date::timestamp - checked_out_date::timestamp) AS total_days
+  bookstore-# FROM books
+  bookstore-# JOIN transactions
+  bookstore-# ON books.isbn = transactions.isbn
+  bookstore-# GROUP BY title;
+         title        | total_days
+  --------------------+------------
+   the cat in the hat | 17 days
+   lord of the rings  | 1 day
+   harry potter       |
+   charlie brown      |
+  (4 rows)
+
+  In order to learn which items should be retired, make a list of all books that
+  have not been checked out in the past 5 years.
+
+  bookstore=# SELECT books.title, MAX(transactions.checked_out_date) AS last_checkout
+  bookstore-# FROM books
+  bookstore-# JOIN transactions
+  bookstore-# ON transactions.isbn = books.isbn
+  bookstore-# GROUP BY books.title
+  bookstore-# HAVING MAX(transactions.checked_out_date) < NOW() - INTERVAL '5 years';
+       title      | last_checkout
+  ----------------+---------------
+   curious geroge | 1999-12-12
+  (1 row)
+
+  List all of the library patrons. If they have one or more books checked out,
+  correspond the books to the patrons.
+
+  bookstore=# SELECT patrons.name, books.title AS checked_out_book
+  bookstore-# FROM patrons
+  bookstore-# JOIN transactions
+  bookstore-# ON patrons.id = transactions.user_id
+  bookstore-# JOIN books
+  bookstore-# ON transactions.isbn = books.isbn
+  bookstore-# WHERE transactions.checked_in_date IS NULL;
+       name      | checked_out_book
+  ---------------+-------------------
+   peter griffin | harry potter
+   homer simpson | charlie brown
+   bart simpson  | lord of the rings
+  (3 rows)
