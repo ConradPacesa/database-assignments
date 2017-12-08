@@ -162,4 +162,4 @@ You’ve just deleted one of the emails, so write a command to remove the row fr
 
 You started reading an email but just heard a crash in another room. Mark the email as unread before investigating, so you can come back to it later.
 
-  UPDATE emails SET read=true WHERE id=2;
+  UPDATE emails SET read=false WHERE id=2;
