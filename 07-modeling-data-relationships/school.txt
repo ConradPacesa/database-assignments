@@ -1,0 +1,33 @@
+What classes/entites do we need to model?
+
+ We need to model the student and class entities.
+
+What fields/attributes will each entity need?
+
+  classes will have id, subject, teacher, class code, room, time
+  students will have id, first name, last name, phone number, email address
+
+What data types do we need to use?
+
+  For classes, id, and room will be integers, subject teacher and code will be
+  text and time will be time.
+  For students, id and phone number will be integers and first name, last name
+  and email address will be text.
+
+What relationships exist between entities?
+
+  There will be a many to many relationship between teachers and students.
+
+How should those relationships be represented in tables?
+
+  The relationships would be represented with an enrolments table containing
+  the studentid as a foreign key representing the id field in the students table
+  and the classid as a foreign key representing the id field in the class table.
+
+Assumptions made:
+
+  - Students will be enrolled in man classes, classes will have many students.
+  - Students will have a first and last name, email address, which will be text
+  and a phone number which will be an int.
+  - Classes will have a subject, teacher, class code as text, room number as int,
+  and time as time. 
