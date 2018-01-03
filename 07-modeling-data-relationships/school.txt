@@ -30,4 +30,4 @@ Assumptions made:
   - Students will have a first and last name, email address, which will be text
   and a phone number which will be an int.
   - Classes will have a subject, teacher, class code as text, room number as int,
-  and time as time. 
+  and time as time.
