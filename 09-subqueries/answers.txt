@@ -1,0 +1,308 @@
+1. Explain a subquery in your own words.
+
+  A subquery is the nesting of a query within a query. It can be nested in the
+  WHERE, FROM or SELECT clause. It is used when filtering or evaluating a
+  condition which you don't want in the primary query.
+
+2. Where can you use a subquery within a SELECT statement?
+
+  Yo can use it in the WHERE, FROM or SELECT clause.
+
+3. When would you employ a subquery?
+
+  You would use a subquery when trying to query something given some condition
+  about another thing, as an alternate to a JOIN statement.
+
+4. Explain a row constructor in your own words.
+
+  A row constructor matches a query against a pre-defined row.
+
+5. What happens if a row in the subquery result provides a NULL value to the
+comparison?
+
+  The operators result will be NULL or not true.
+
+6. What are the ways to use a subquery within a WHERE clause? If you can't
+remember them, do these flashcards until you can.
+
+  A subquery within a WHERE clause can be used with a row constructor, or using
+  an expression such as IN, NOT IN, ANY, SOME, ALL or EXISTS.
+
+7. Build an employees table and a shifts table with appropriate primary and
+foreign keys. Then, write queries to find the following information:
+  List all employees and all shifts.
+
+  company=# SELECT * FROM employees;
+   id | name
+  ----+-------
+    1 | Bob
+    2 | Jim
+    3 | sally
+  (3 rows)
+
+  company=# SELECT * FROM shifts;
+   id |   time    | employee_id
+  ----+-----------+-------------
+    1 | morning   |           2
+    2 | afternoon |           1
+    3 | evening   |
+    4 | night     |
+  (4 rows)
+
+  Create a list of all possible schedules.
+
+  company=# SELECT name, time
+  company-# FROM employees, shifts;
+   name  |   time
+  -------+-----------
+   Bob   | morning
+   Bob   | afternoon
+   Bob   | evening
+   Bob   | night
+   Jim   | morning
+   Jim   | afternoon
+   Jim   | evening
+   Jim   | night
+   sally | morning
+   sally | afternoon
+   sally | evening
+   sally | night
+  (12 rows)
+
+8. Given a dogs table, adoptions table, adopters table, and volunteers table,
+write queries to retrieve the following information. All tables are described
+below.
+  Create a list of all volunteers. If the volunteer is fostering a dog, include
+  each dog as well.
+
+  pet_adoption=# SELECT volunteers.name, dogs.name AS dog
+  pet_adoption-# FROM volunteers, dogs
+  pet_adoption-# WHERE dogs.id = volunteers.foster_id;
+   name  |  dog
+  -------+--------
+   sally | spot
+   bobby | muffin
+  (2 rows)
+
+  List the adopter’s name and the pet’s name for each animal adopted within the
+  past month to be displayed as a ‘Happy Tail’ on social media.
+
+  pet_adoption=# SELECT adoptors.first_name AS adopter,
+  pet_adoption-# dogs.name AS dog,
+  pet_adoption-# adoptions.date AS date
+  pet_adoption-# FROM adoptors, dogs, adoptions
+  pet_adoption-# WHERE adoptions.adopter_id = adoptors.id
+  pet_adoption-# AND adoptions.dog_id = dogs.id
+  pet_adoption-# AND adoptions.date > NOW() - INTERVAL '30 days';
+   adopter | dog  |    date
+  ---------+------+------------
+   peter   | tess | 2017-12-12
+  (1 row)
+
+  Create a list of adopters who have not yet chosen a dog to adopt and generate
+  all possible combinations of adopters and available dogs.
+
+  pet_adoption=# SELECT adoptors.first_name AS adoptor,
+  pet_adoption-# dogs.name AS dog
+  pet_adoption-# FROM adoptors, dogs
+  pet_adoption-# WHERE dogs.id NOT IN (SELECT dog_id FROM adoptions WHERE dog_id IS NOT null)
+  pet_adoption-# AND adoptors.id NOT IN (SELECT adopter_id FROM adoptions WHERE adopter_id IS NOT null);
+   adoptor |  dog
+  ---------+--------
+   glenn   | spot
+   glenn   | muffin
+  (2 rows)
+
+  Display a list of all cats and all dogs who have not been adopted.
+
+  pet_adoption=# SELECT name, 'dog' AS "Species" FROM dogs WHERE id NOT IN (SELECT dog_id FROM adoptions WHERE dog_id IS NOT null)
+  pet_adoption-# UNION
+  pet_adoption-# SELECT name, 'cat' AS "Species" FROM cats WHERE id NOT IN (SELECT cat_id FROM adoptions WHERE cat_id IS NOT null);
+    name  | Species
+  --------+---------
+   muffin | dog
+   fluffy | cat
+   spot   | dog
+   tiger  | cat
+   max    | cat
+  (5 rows)
+
+  Create a list of volunteers who are available to foster. If they currently are
+  fostering a dog, include the dog. Also include all dogs who are not currently
+  in foster homes.
+
+  pet_adoption=# SELECT
+  pet_adoption-# volunteers.name AS volunteer_name,
+  pet_adoption-# dogs.name AS dog_fostering
+  pet_adoption-# FROM volunteers
+  pet_adoption-# FULL OUTER JOIN dogs
+  pet_adoption-# ON volunteers.foster_id = dogs.id;
+  volunteer_name | dog_fostering
+  ---------------+---------------
+  sally          | spot
+  bobby          | muffin
+  homer          |
+                 | tess
+                 | rufus
+  (5 rows)
+
+9. Write a query to find the name of the person who adopted Seashell given the
+tables cats, adoptions, and adopters. All tables are described below
+
+  pet_adoption=# SELECT adoptors.first_name
+  pet_adoption-# FROM adoptors
+  pet_adoption-# WHERE EXISTS
+  pet_adoption-# (SELECT adopter_id
+  pet_adoption(# FROM adoptions
+  pet_adoption(# WHERE adoptors.id = adoptions.adopter_id
+  pet_adoption(# AND adoptions.cat_id = 4);
+   first_name
+  ------------
+   lisa
+  (1 row)
+
+10. Given the tables books (isbn, title, author), transactions (id,
+checked_out_date, checked_in_date, user_id, isbn), holds (id, isbn, user_id,
+rank, date), and patrons (id, name, fine_amount), write queries to find the
+following information:
+  To discern if the library should buy more copies of a given book, please
+  provide the names and position, in order, of all of the patrons waiting in
+  line for Harry Potter and the Sorcerer’s Stone.
+
+  bookstore=# SELECT patrons.name, holds.rank
+  bookstore-# FROM patrons, holds
+  bookstore-# WHERE holds.isbn = 1245
+  bookstore-# AND patrons.id = holds.user_id;
+       name      | rank
+  ---------------+------
+   homer simpson |    1
+   bart simpson  |    2
+  (2 rows)
+
+  Make a list of all book titles and denote whether or not a copy of that book
+  is checked out.
+
+  bookstore=# SELECT books.title AS book,
+  bookstore-# bool_or(transactions.checked_in_date IS NULL) AS checked_out
+  bookstore-# FROM books, transactions
+  bookstore-# WHERE books.isbn = transactions.isbn
+  bookstore-# GROUP BY books.title;
+          book        | checked_out
+  --------------------+-------------
+   curious geroge     | f
+   the cat in the hat | f
+   lord of the rings  | t
+   harry potter       | t
+   charlie brown      | t
+  (5 rows)
+
+  In an effort to learn which books take longer to read, the librarians would
+  like you to create a list of total checked out time by book name in the past
+  month.
+
+  bookstore=# SELECT books.title,
+  bookstore-# SUM(checked_in_date::timestamp - checked_out_date::timestamp) AS total_days
+  bookstore-# FROM books, transactions
+  bookstore-# WHERE books.isbn = transactions.isbn
+  bookstore-# GROUP BY title;
+         title        | total_days
+  --------------------+------------
+   curious geroge     | 2 days
+   the cat in the hat | 17 days
+   lord of the rings  | 1 day
+   harry potter       |
+   charlie brown      |
+  (5 rows)
+
+  In order to learn which items should be retired, make a list of all books that
+  have not been checked out in the past 5 years.
+
+  bookstore=# SELECT books.title, MAX(transactions.checked_out_date) AS last_checkout
+  bookstore-# FROM books, transactions
+  bookstore-# WHERE transactions.isbn = books.isbn
+  bookstore-# GROUP BY books.title
+  bookstore-# HAVING MAX(transactions.checked_out_date) < NOW() - INTERVAL '5 years';
+       title      | last_checkout
+  ----------------+---------------
+   curious geroge | 1999-12-12
+  (1 row)
+
+  List all of the library patrons. If they have one or more books checked out,
+  correspond the books to the patrons.
+
+  bookstore=# SELECT patrons.name, books.title AS checked_out_book
+  bookstore-# FROM patrons, books, transactions
+  bookstore-# WHERE patrons.id = transactions.user_id
+  bookstore-# AND transactions.isbn = books.isbn
+  bookstore-# AND transactions.checked_in_date IS NULL;
+       name      | checked_out_book
+  ---------------+-------------------
+   peter griffin | harry potter
+   homer simpson | charlie brown
+   bart simpson  | lord of the rings
+  (3 rows)
+
+11. Given the following tables in an airliner database, find the following
+information. airplanes (model, seat capacity, range), flights(flight_number,
+destination, origin, company, distance, flight_time, airplane_model),
+transactions(id, seats_sold, total_revenue, total_cost, flight_number, date)
+  To determine the most profitable airplanes, find all airplane models where
+  each flight has had over 100 paying customers in the past month.
+
+  airline=# SELECT model
+  airline-# FROM airplanes
+  airline-# WHERE NOT EXISTS
+  airline-# (SELECT transactions.seats_sold
+  airline(# FROM transactions, flights
+  airline(# WHERE transactions.seats_sold < 100
+  airline(# AND transactions.flight_number = flights.flight_number
+  airline(# AND flights.airplane_model = airplanes.model);
+      model
+  -------------
+   boeing 747
+   airbus a330
+  (2 rows)
+
+
+  To determine the most profitable flights, find all destination-origin pairs
+  where 90% or more of the seats have been sold in the past month.
+
+  airline=#   SELECT destination, origin
+  airline-#   FROM flights
+  airline-#   WHERE flight_number IN
+  airline-#   (SELECT f.flight_number
+  airline(#   FROM transactions f, airplanes a
+  airline(#   WHERE f.seats_sold / a.seating_capacity >= 0.9
+  airline(#   AND f.date > CURRENT_DATE - INTERVAL '1 MONTH');
+   destination |  origin
+  -------------+----------
+   new york    | atlanta
+   london      | new york
+   LA          | new york
+  (3 rows)
+
+  The airline is looking to expand its presence in the US Southeast and globally.
+  Find the total revenue of any flight arriving at or departing from Atlanta.
+
+  airline=# SELECT transactions.total_revenue
+  airline-# FROM transactions
+  airline-# WHERE transactions.flight_number IN
+  airline-# (SELECT flights.flight_number
+  airline(# FROM flights
+  airline(# WHERE destination = 'atlanta'
+  airline(# OR origin = 'atlanta');
+   total_revenue
+  ---------------
+           10000
+           14000
+           15000
+           12000
+  (4 rows)
+
+11. Compare the subqueries you've written above. Compare them to the joins you
+wrote in Checkpoint 6. Which ones are more readable? Which were more logical to
+write?
+
+  The subqueries are more readable and logical to write than join operations,
+  especially as the queries get more complex. Using subqueries makes it easier
+  to see the conditions on the data being pulled from other tables.  
